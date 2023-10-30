@@ -10,14 +10,9 @@ echo ####################PRECHECK####################
 timeout /t 5
 
 :: directory of the install script, has a trailing \
-set SCRIPT_DIR=%~dp0
-
 set SYSMON_DIR=C:\ProgramData\sysmon
 set SYSMON_CONF=sysmonconfig.xml
-set SYSMON_BIN=%SCRIPT_DIR%sysmon_bin
-
-set WLB_DIR=C:\ProgramData\winlogbeat
-set WLB_BIN=%SCRIPT_DIR%wlb_bin
+set SYSMON_BIN=C:\Source\sysmon
 
 echo.
 echo [+] Checking powershell version...
@@ -38,6 +33,19 @@ if %errorLevel% NEQ 0 (
 
 echo.
 echo ####################SYSMON####################
+
+:: download sysmon
+@powershell Invoke-WebRequest -Uri "https://live.sysinternals.com/Sysmon64.exe" -OutFile "C:\Source\Sysmon\Sysmon64.exe"
+@powershell Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Neo23x0/sysmon-config/master/sysmonconfig-export-block.xml" -OutFile "C:\Source\Sysmon\sysmonconfig.xml"
+
+
+sc query sysmon >nul
+if "%errorlevel%" EQU "0" (
+	echo.
+	echo [+] Sysmon installed, removing...
+	sysmon.exe -nobanner -u force
+	)
+
 
 sc query sysmon64 >nul
 if "%errorlevel%" EQU "0" (
@@ -79,32 +87,6 @@ xcopy /q/y %SCRIPT_DIR%Sigcheck64.exe %SYSMON_DIR%
 SchTasks /create /tn "Update sysmon and winlogbeat config" /ru SYSTEM /rl HIGHEST /sc daily /tr "cmd.exe /c \"%SYSMON_DIR%\\auto_update.bat\"" /f /st %tasktime%
 powershell Get-Service sysmon64 || goto :service_error
 
-echo ####################WINLOGBEAT####################
-
-echo.
-echo [+] Extract winlogbeat...
-@powershell Expand-Archive -force -LiteralPath '%WLB_BIN%\winlogbeat.zip' -DestinationPath 'C:\Windows\Temp\'
-if not exist %WLB_DIR% (
-	mkdir %WLB_DIR%
-	)
-pushd "C:\Windows\Temp\winlogbeat*"
-:: Make sure winlogbeat was extracted before copying everything.
-if "%errorlevel%" EQU "0" (
-	:: Copy every winlogbeat file to program dir
-	echo [+] Copying winlogbeat and config...
-	xcopy /q/y/s . %WLB_DIR%
-	xcopy /q/y %WLB_BIN%\winlogbeat.yml %WLB_DIR%
-	) else (
-	:: Can't cd into winlogbeat*
-	echo [-] Can't cd into C:\Windows\Temp\winlogbeat*. Script will exit.
-    goto end
-	)
-
-echo [+] Installing winlogbeat and applying config...
-@powershell -ExecutionPolicy Unrestricted -File "%WLB_DIR%\install-service-winlogbeat.ps1" >nul
-echo [+] Starting winlogbeat...
-@powershell Start-Service winlogbeat || goto :service_error
-@powershell Get-Service winlogbeat
 
 echo ####################PS LOGGING####################
 
