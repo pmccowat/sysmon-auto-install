@@ -43,9 +43,9 @@ echo ####################SYSMON####################
 @powershell Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Neo23x0/sysmon-config/master/sysmonconfig-export-block.xml" -OutFile "C:\Source\Sysmon\sysmonconfig.xml"
 @powershell Invoke-WebRequest -Uri "https://raw.githubusercontent.com/pmccowat/sysmon-auto-install/master/auto_update.bat" -OutFile "C:\Source\Sysmon\auto_update.bat"
 
-copy %SYSMON_BIN%\sysmon64.exe %SYSMON_DIR% /y
-copy %SYSMON_BIN%\%SYSMON_CONF% %SYSMON_DIR% /y
-copy %SYSMON_BIN%\auto_update.bat %SYSMON_DIR% /y
+xcopy %SYSMON_BIN%\sysmon64.exe %SYSMON_DIR% /q /y
+xcopy %SYSMON_BIN%\%SYSMON_CONF% %SYSMON_DIR% /q /y
+xcopy %SYSMON_BIN%\auto_update.bat %SYSMON_DIR% /q /y
 
 schtasks /delete /TN "Update_Sysmon_Rules" /F
 

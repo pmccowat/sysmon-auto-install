@@ -39,13 +39,13 @@ echo.
 echo ####################SYSMON####################
 
 :: download sysmon
-@powershell Invoke-WebRequest -Uri "https://live.sysinternals.com/Sysmon64.exe" -OutFile "C:\Source\Sysmon\Sysmon64.exe"
+::@powershell Invoke-WebRequest -Uri "https://live.sysinternals.com/Sysmon64.exe" -OutFile "C:\Source\Sysmon\Sysmon64.exe"
 @powershell Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Neo23x0/sysmon-config/master/sysmonconfig-export-block.xml" -OutFile "C:\Source\Sysmon\sysmonconfig.xml"
 @powershell Invoke-WebRequest -Uri "https://raw.githubusercontent.com/pmccowat/sysmon-auto-install/master/auto_update.bat" -OutFile "C:\Source\Sysmon\auto_update.bat"
 
-copy %SYSMON_BIN%\sysmon64.exe %SYSMON_DIR% /y
-copy %SYSMON_BIN%\%SYSMON_CONF% %SYSMON_DIR% /y
-copy %SYSMON_BIN%\auto_update.bat %SYSMON_DIR% /y
+::xcopy %SYSMON_BIN%\sysmon64.exe %SYSMON_DIR% /q /y
+::xcopy %SYSMON_BIN%\%SYSMON_CONF% %SYSMON_DIR% /q /y
+::xcopy %SYSMON_BIN%\auto_update.bat %SYSMON_DIR% /q /y
 
 schtasks /delete /TN "Update_Sysmon_Rules" /F
 
@@ -53,37 +53,10 @@ if not exist %SYSMON_DIR% (
 	mkdir %SYSMON_DIR%
 	)
 
-sc query sysmon >nul
-if "%errorlevel%" EQU "0" (
-	echo.
-	echo [+] Sysmon installed, removing...
-	sysmon.exe -u
-	)
-
-
-sc query sysmon64 >nul
-if "%errorlevel%" EQU "0" (
-	echo.
-	echo [+] Sysmon64 installed, removing...
-	sysmon64.exe -u force
-	)
-
-sc query sysmon64 >nul
-if "%errorlevel%" EQU "0" (
-	echo.
-	echo [+] Sysmon64 installed, removing...
-	sysmon64.exe -u
-	)
-
-echo.
-echo [+] Copying sysmon and config...
-
 pushd %SYSMON_DIR%
 
 
 echo [+] Installing sysmon and applying config...
-sysmon64.exe -i -accepteula
-::sc failure Sysmon64 actions= restart/10000/restart/10000// reset= 120
 echo.
 echo [+] Creating daily update task
 :: add scheduler task to update sysmon config with start time based on when the task is added
