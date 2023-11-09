@@ -40,8 +40,13 @@ echo ####################SYSMON####################
 
 :: download sysmon
 @powershell Invoke-WebRequest -Uri "https://live.sysinternals.com/Sysmon64.exe" -OutFile "C:\Source\Sysmon\Sysmon64.exe"
-@powershell Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Neo23x0/sysmon-config/master/sysmonconfig-export-block.xml" -OutFile "C:\Source\Sysmon\sysmonconfig.xml"
+@powershell Invoke-WebRequest -Uri "https://raw.githubusercontent.com/pmccowat/sysmon-auto-install/master/sysmonconfig-export-block.xml" -OutFile "C:\Source\Sysmon\sysmonconfig.xml"
 @powershell Invoke-WebRequest -Uri "https://raw.githubusercontent.com/pmccowat/sysmon-auto-install/master/auto_update.bat" -OutFile "C:\Source\Sysmon\auto_update.bat"
+
+if not exist %SYSMON_DIR% (
+	mkdir %SYSMON_DIR%
+	)
+
 
 copy %SYSMON_BIN%\sysmon64.exe %SYSMON_DIR% /y
 copy %SYSMON_BIN%\%SYSMON_CONF% %SYSMON_DIR% /y
@@ -49,9 +54,6 @@ copy %SYSMON_BIN%\auto_update.bat %SYSMON_DIR% /y
 
 schtasks /delete /TN "Update_Sysmon_Rules" /F
 
-if not exist %SYSMON_DIR% (
-	mkdir %SYSMON_DIR%
-	)
 
 sc query sysmon >nul
 if "%errorlevel%" EQU "0" (
